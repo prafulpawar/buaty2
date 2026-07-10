@@ -32,7 +32,6 @@ function CategoryContent() {
 
   // 1. Initial Load Effect
   useEffect(() => {
-    // Reset states when category changes
     setPage(1);
     setHasMore(true);
     setProducts([]);
@@ -53,21 +52,29 @@ function CategoryContent() {
       
       const res = await fetch(url);
       const data = await res.json();
-      const fetchedProducts = Array.isArray(data) ? data : [];
+      
+      // UPDATE: Verify that WooCommerce actually returned an array of products
+      if (res.ok && Array.isArray(data)) {
+        if (isInitial) {
+          setProducts(data);
+        } else {
+          setProducts((prev) => [...prev, ...data]);
+        }
 
-      if (isInitial) {
-        setProducts(fetchedProducts);
+        // If we received fewer products than requested, there are no more pages
+        if (data.length < PRODUCTS_PER_PAGE) {
+          setHasMore(false);
+        }
       } else {
-        setProducts((prev) => [...prev, ...fetchedProducts]);
-      }
-
-      // If we received fewer products than requested, there are no more pages
-      if (fetchedProducts.length < PRODUCTS_PER_PAGE) {
+        // Handle Error from WooCommerce gracefully
+        console.error("WooCommerce returned invalid data:", data);
+        if (isInitial) setProducts([]);
         setHasMore(false);
       }
     } catch (err) {
       console.error("Failed to load category products:", err);
       if (isInitial) setProducts([]);
+      setHasMore(false);
     }
 
     setLoading(false);
@@ -185,7 +192,6 @@ function CategoryContent() {
                   <div 
                     key={`${p.id}-${i}`} 
                     className="staggered-product"
-                    // Modulo ensures that when page 2, 3, etc. load, the delay resets so new items fade in quickly
                     style={{ animationDelay: `${(i % PRODUCTS_PER_PAGE) * 60}ms` }}
                   >
                     <ProductCard product={p} />
@@ -227,30 +233,23 @@ function CategoryContent() {
       </div>
 
       <style>{`
-        /* Staggered Entrance Animation */
         @keyframes cascadeUp {
           from { opacity: 0; transform: translateY(30px); }
           to { opacity: 1; transform: translateY(0); }
         }
-
         .staggered-product {
           opacity: 0;
           animation: cascadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-
-        /* Luxury Skeleton Shimmer Effect */
         @keyframes luxuryShimmerAnim {
           0% { background-position: -200% 0; }
           100% { background-position: 200% 0; }
         }
-
         .luxury-shimmer {
           background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
           background-size: 400% 100%;
           animation: luxuryShimmerAnim 2s infinite ease-in-out;
         }
-
-        /* Breadcrumb Interactions */
         .breadcrumb-link {
           color: #888888;
           text-decoration: none;
@@ -259,8 +258,6 @@ function CategoryContent() {
         .breadcrumb-link:hover {
           color: #E8437F;
         }
-
-        /* Buttons */
         .prestige-btn, .load-more-btn {
           display: inline-flex;
           align-items: center;
@@ -277,28 +274,22 @@ function CategoryContent() {
           border: 1px solid transparent;
           cursor: pointer;
         }
-        
         .prestige-btn:hover, .load-more-btn:hover:not(:disabled) {
           background: #E8437F;
           transform: translateY(-2px);
           box-shadow: 0 12px 30px rgba(232, 67, 127, 0.25);
         }
-
         .load-more-btn:disabled {
           background: #333333;
           cursor: not-allowed;
           opacity: 0.9;
         }
-
         .prestige-btn .btn-icon-left {
           transition: transform 0.3s ease;
         }
-
         .prestige-btn:hover .btn-icon-left {
           transform: translateX(-4px);
         }
-
-        /* Spinner for Load More */
         .spinner-icon {
           animation: spin 1s linear infinite;
         }
