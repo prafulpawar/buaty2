@@ -74,8 +74,9 @@ export default function Header() {
             <ul className="nav-list">
               {mainNavCategories.map((cat) => (
                 <li key={cat.id}>
+                  {/* FIXED: Changed route to match /category/[id] */}
                   <Link 
-                    href={`/productpage/products?category=${cat.id}`}
+                    href={`/category/${cat.id}`}
                     className="nav-link"
                   >
                     <span dangerouslySetInnerHTML={{ __html: cat.name }} />
@@ -165,8 +166,9 @@ export default function Header() {
           <ul className="sidebar-nav">
             {mainNavCategories.map((cat) => (
               <li key={cat.id}>
+                {/* FIXED: Changed route to match /category/[id] */}
                 <Link 
-                  href={`/productpage/products?category=${cat.id}`}
+                  href={`/category/${cat.id}`}
                   className="sidebar-link"
                   onClick={() => setMobileMenuOpen(false)}
                 >

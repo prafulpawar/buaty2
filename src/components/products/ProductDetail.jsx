@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { 
   Star, Heart, ChevronRight, ChevronUp, ChevronDown, 
-  MapPin, ShieldCheck, RotateCcw, CheckCircle2, TicketPercent, Info, ShoppingBag
+  MapPin, ShieldCheck, RotateCcw
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import ProductCard from "@/components/products/ProductCard";
@@ -27,16 +27,16 @@ export default function ProductDetail() {
     async function load() {
       setLoading(true);
       try {
-        // Fetching by 'slug' to fix the 404 error
-        const res = await fetch(`/api/wc/products?slug=${params.id}`);
+        const isNumeric = /^\d+$/.test(params.id);
+        const queryParam = isNumeric ? `include=${params.id}` : `slug=${params.id}`;
+        
+        const res = await fetch(`/api/wc/products?${queryParam}`);
         const data = await res.json();
         
-        // WooCommerce returns an array when searching by slug
         if (res.ok && Array.isArray(data) && data.length > 0) {
-          const productData = data[0]; // Extract the actual product object
+          const productData = data[0]; 
           setProduct(productData);
           
-          // Fetch related products safely
           if (productData.categories?.[0]?.id) {
             const relRes = await fetch(`/api/wc/products?category=${productData.categories[0].id}&per_page=5&status=publish`);
             if (relRes.ok) {
@@ -45,7 +45,6 @@ export default function ProductDetail() {
             }
           }
         } else {
-          // Product not found in the array or API error
           console.error("Product not found or API error:", data);
           setProduct(null);
         }
@@ -60,12 +59,11 @@ export default function ProductDetail() {
 
   const handleAddToCart = () => {
     if (!product) return;
-    addToCart(product, 1); // Defaulting to 1 for Nykaa UI
+    addToCart(product, 1);
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
   };
 
-  // --- NYKAA LIGHT MODE LOADING SKELETON ---
   if (loading) {
     return (
       <div className="page-container loading-state">
@@ -93,7 +91,6 @@ export default function ProductDetail() {
     );
   }
 
-  // --- VARIABLES ---
   const images = product.images || [];
   const price = parseFloat(product.price) || 0;
   const regularPrice = parseFloat(product.regular_price) || 0;
@@ -107,14 +104,14 @@ export default function ProductDetail() {
   return (
     <div className="product-page-wrapper">
       
-      {/* --- BREADCRUMBS --- */}
-      <div className="breadcrumb">
+      {/* BREADCRUMBS */}
+      <div className="breadcrumb hide-scroll">
         <Link href="/">Home</Link>
-        <ChevronRight size={14} />
+        <ChevronRight size={14} className="shrink-0" />
         {product.categories?.[0] && (
           <>
             <Link href={`/category/${product.categories[0].id}`}>{product.categories[0].name}</Link>
-            <ChevronRight size={14} />
+            <ChevronRight size={14} className="shrink-0" />
           </>
         )}
         <span className="current-crumb" dangerouslySetInnerHTML={{ __html: product.name }} />
@@ -122,7 +119,7 @@ export default function ProductDetail() {
 
       <div className="main-content-grid">
         
-        {/* ================= LEFT / TOP: GALLERY & DETAILS ================= */}
+        {/* TOP SECTION: GALLERY & DETAILS */}
         <div className="product-top-section">
           
           {/* GALLERY */}
@@ -144,7 +141,7 @@ export default function ProductDetail() {
             </div>
             
             <div className="main-image-wrapper">
-              <button className="wishlist-icon"><Heart size={24} color="#fc2779" /></button>
+              <button className="wishlist-icon"><Heart size={20} color="#fc2779" /></button>
               <img 
                 src={images[selectedImage]?.src || "/placeholder.jpg"} 
                 alt={product.name}
@@ -161,7 +158,7 @@ export default function ProductDetail() {
             <div className="rating-block">
               <div className="stars">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={16} fill={i < Math.round(rating) ? "#333" : "none"} stroke={i < Math.round(rating) ? "#333" : "#ccc"} />
+                  <Star key={i} size={14} fill={i < Math.round(rating) ? "#333" : "none"} stroke={i < Math.round(rating) ? "#333" : "#ccc"} />
                 ))}
                 <span className="rating-text">{rating > 0 ? rating : 'No'} / 5</span>
               </div>
@@ -182,43 +179,22 @@ export default function ProductDetail() {
               <div className="tax-inclusive">inclusive of all taxes</div>
             </div>
 
-            {/* Coupons Section (Static UI match) */}
-            <div className="coupons-section">
-              <div className="coupons-header">
-                <h3>Collect Multiple Coupons</h3>
-                <span className="how-to">How to <Info size={14} /></span>
-              </div>
-              <ul className="coupon-rules">
-                <li>Add products worth the minimum order value to bag</li>
-                <li>Once you add, Coupon will get auto applied</li>
-              </ul>
-              <div className="coupon-card">
-                <div className="coupon-icon-area">
-                  <TicketPercent size={24} color="#fc2779" />
-                  <div className="percent-badge">%</div>
-                </div>
-                <div className="coupon-details">
-                  <h4>Extra 15% Off upto ₹300 Max</h4>
-                  <p>Extra 15% Off upto ₹300 Max On your 1st order abov... <span>see details</span></p>
-                </div>
-                <div className="coupon-action-row">
-                  <span className="code">NEW15</span>
-                  <button className="collect-btn">Collect</button>
-                </div>
-              </div>
-            </div>
-
-            {/* Delivery & Cart Actions */}
+            {/* Delivery & Cart Actions - FIXED LAYOUT */}
             <div className="action-delivery-container">
               <div className="actions-row">
-                <button 
-                  onClick={handleAddToCart} 
-                  disabled={!inStock}
-                  className={`btn-add-to-bag ${addedToCart ? "added" : ""}`}
-                >
-                  {addedToCart ? "Added to Bag" : "Add to Bag"}
-                </button>
                 
+                {/* Button Wrapper */}
+                <div className="action-btn-wrapper">
+                  <button 
+                    onClick={handleAddToCart} 
+                    disabled={!inStock}
+                    className={`btn-add-to-bag ${addedToCart ? "added" : ""}`}
+                  >
+                    {addedToCart ? "Added to Bag" : "Add to Bag"}
+                  </button>
+                </div>
+                
+                {/* Delivery Wrapper */}
                 <div className="delivery-check">
                   <div className="delivery-header">
                     <MapPin size={16} /> Delivery Options
@@ -228,27 +204,26 @@ export default function ProductDetail() {
                     <button>Check</button>
                   </div>
                 </div>
+
               </div>
               
               {/* Trust Badges */}
               <div className="trust-badges">
-                <div className="badge"><ShieldCheck size={18} color="#fc2779" /> 100% Genuine</div>
-                <div className="badge"><RotateCcw size={18} color="#fc2779" /> Easy Return Policy</div>
-                <div className="badge sold-by">Sold by : NYKAA E RETA...</div>
+                <div className="badge"><ShieldCheck size={16} color="#fc2779" /> <span>100% Genuine</span></div>
+                <div className="badge"><RotateCcw size={16} color="#fc2779" /> <span>Easy Return Policy</span></div>
               </div>
             </div>
 
           </div>
         </div>
 
-        {/* ================= BOTTOM: TABS & STICKY CART ================= */}
+        {/* BOTTOM: TABS & STICKY CART */}
         <div className="product-bottom-section">
           
           <div className="details-content-area">
             {/* Description Tab Section */}
-            <h2 className="section-title">Product Description</h2>
             <div className="tabs-wrapper">
-              <div className="tabs-header">
+              <div className="tabs-header hide-scroll">
                 <button className={`tab-btn ${activeTab === 'description' ? 'active' : ''}`} onClick={() => setActiveTab('description')}>Description</button>
                 <button className={`tab-btn ${activeTab === 'ingredients' ? 'active' : ''}`} onClick={() => setActiveTab('ingredients')}>Ingredients</button>
                 <button className={`tab-btn ${activeTab === 'howto' ? 'active' : ''}`} onClick={() => setActiveTab('howto')}>How To Use</button>
@@ -299,7 +274,7 @@ export default function ProductDetail() {
 
         </div>
         
-        {/* --- RELATED PRODUCTS --- */}
+        {/* RELATED PRODUCTS */}
         {related.length > 0 && (
           <div className="related-section">
             <h2 className="section-title text-center">Similar Products</h2>
@@ -316,15 +291,17 @@ export default function ProductDetail() {
       <style jsx global>{`
         /* ================= GLOBAL & RESETS ================= */
         .product-page-wrapper {
-          background-color: #f3f4f5;
+          background-color: #f3f4f6;
           min-height: 100vh;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
           color: #001325;
-          padding-bottom: 60px;
+          padding-bottom: clamp(40px, 8vw, 80px);
+          overflow-x: hidden;
         }
         
         .hide-scroll::-webkit-scrollbar { display: none; }
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        .shrink-0 { flex-shrink: 0; }
         
         button { cursor: pointer; border: none; background: transparent; font-family: inherit; outline: none; }
         ul { padding: 0; margin: 0; list-style: none; }
@@ -332,15 +309,16 @@ export default function ProductDetail() {
         /* ================= BREADCRUMBS ================= */
         .breadcrumb {
           background: #fff;
-          padding: 12px 5%;
+          padding: clamp(10px, 2vw, 12px) clamp(16px, 5vw, 5%);
           display: flex;
           align-items: center;
-          gap: 8px;
-          font-size: 13px;
+          gap: 6px;
+          font-size: clamp(11px, 2.5vw, 13px);
           color: #757575;
           border-bottom: 1px solid #e5e5e5;
           white-space: nowrap;
           overflow-x: auto;
+          width: 100%;
         }
         .breadcrumb a { color: #757575; text-decoration: none; }
         .breadcrumb a:hover { color: #fc2779; }
@@ -349,41 +327,50 @@ export default function ProductDetail() {
         /* ================= MAIN LAYOUT ================= */
         .main-content-grid {
           max-width: 1280px;
-          margin: 20px auto;
-          padding: 0 5%;
+          margin: clamp(16px, 3vw, 24px) auto;
+          padding: 0 clamp(12px, 4vw, 5%);
           display: flex;
           flex-direction: column;
-          gap: 20px;
+          gap: clamp(16px, 3vw, 24px);
         }
 
         /* --- TOP SECTION (Image & Core Info) --- */
         .product-top-section {
           background: #fff;
-          border-radius: 8px;
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 0;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+          border-radius: 12px;
+          display: flex;
+          flex-direction: column;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+          border: 1px solid #eaeaea;
           overflow: hidden;
         }
         @media (min-width: 900px) {
-          .product-top-section { grid-template-columns: 55% 45%; }
+          .product-top-section { flex-direction: row; }
         }
 
         /* --- GALLERY --- */
         .gallery-container {
           display: flex;
-          padding: 20px;
-          border-right: 1px solid #f0f0f0;
-          height: 100%;
+          padding: clamp(16px, 3vw, 24px);
+          border-bottom: 1px solid #eaeaea;
+          width: 100%;
         }
+        @media (min-width: 900px) {
+          .gallery-container {
+            width: 50%;
+            border-bottom: none;
+            border-right: 1px solid #eaeaea;
+          }
+        }
+        
         .thumbnail-column {
           display: none;
           flex-direction: column;
           align-items: center;
           gap: 8px;
           width: 70px;
-          margin-right: 20px;
+          margin-right: clamp(12px, 2vw, 20px);
+          flex-shrink: 0;
         }
         @media (min-width: 768px) { .thumbnail-column { display: flex; } }
         
@@ -399,13 +386,15 @@ export default function ProductDetail() {
           flex-direction: column;
           gap: 12px;
           overflow-y: auto;
-          max-height: 400px;
+          max-height: clamp(300px, 50vh, 450px);
           padding: 4px 0;
+          width: 100%;
         }
         .thumb-btn {
-          width: 60px; height: 60px;
+          width: clamp(50px, 5vw, 60px); 
+          height: clamp(50px, 5vw, 60px);
           border: 1px solid #eaeaea;
-          border-radius: 4px;
+          border-radius: 6px;
           padding: 4px;
           transition: all 0.2s;
         }
@@ -418,149 +407,256 @@ export default function ProductDetail() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: #fafafa;
+          background: #ffffff;
           border-radius: 8px;
-          min-height: 350px;
+          min-height: clamp(250px, 40vh, 450px);
+          width: 100%;
+          overflow: hidden;
         }
         .wishlist-icon {
           position: absolute;
-          top: 16px; right: 16px;
+          top: clamp(8px, 2vw, 16px); 
+          right: clamp(8px, 2vw, 16px);
           background: #fff;
           border-radius: 50%;
-          width: 40px; height: 40px;
+          width: clamp(32px, 5vw, 40px); 
+          height: clamp(32px, 5vw, 40px);
           display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+          z-index: 2;
         }
         .main-image {
-          max-width: 80%;
-          max-height: 450px;
+          width: 100%;
+          max-width: 85%;
+          max-height: clamp(250px, 40vh, 450px);
           object-fit: contain;
         }
 
         /* --- PRODUCT INFO RIGHT SIDE --- */
-        .info-container { padding: 24px; display: flex; flex-direction: column; }
+        .info-container { 
+          padding: clamp(20px, 4vw, 32px); 
+          display: flex; 
+          flex-direction: column; 
+          width: 100%;
+        }
+        @media (min-width: 900px) {
+          .info-container { width: 50%; }
+        }
         
         .product-title {
-          font-size: 20px;
+          font-size: clamp(20px, 3vw, 24px);
           line-height: 1.4;
-          font-weight: 500;
-          color: #001325;
+          font-weight: 600;
+          color: #111;
           margin: 0 0 12px 0;
+          word-wrap: break-word;
         }
         
         .rating-block {
-          display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+          display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin-bottom: 16px;
         }
         .stars { display: flex; align-items: center; gap: 2px; }
-        .rating-text { font-size: 14px; font-weight: 500; margin-left: 4px; }
-        .review-count { font-size: 13px; color: #757575; }
+        .rating-text { font-size: clamp(13px, 2vw, 14px); font-weight: 500; margin-left: 4px; }
+        .review-count { font-size: clamp(12px, 1.8vw, 13px); color: #757575; }
 
-        .price-section { margin-bottom: 24px; }
-        .price-section .mrp { font-size: 16px; color: #757575; text-decoration: line-through; margin-right: 8px; }
-        .price-section .current-price { font-size: 24px; font-weight: 700; color: #001325; margin-right: 12px; }
-        .price-section .discount { font-size: 14px; font-weight: 600; color: #008945; }
-        .tax-inclusive { font-size: 12px; color: #757575; margin-top: 4px; }
+        .price-section { margin-bottom: clamp(24px, 4vw, 32px); } 
+        .price-section .mrp { font-size: clamp(14px, 2vw, 16px); color: #757575; text-decoration: line-through; margin-right: 8px; }
+        .price-section .current-price { font-size: clamp(22px, 3vw, 26px); font-weight: 700; color: #111; margin-right: 12px; }
+        .price-section .discount { font-size: clamp(12px, 2vw, 14px); font-weight: 600; color: #008945; }
+        .tax-inclusive { font-size: 12px; color: #757575; margin-top: 6px; }
 
-        /* --- COUPONS SECTION --- */
-        .coupons-section { margin-bottom: 30px; }
-        .coupons-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .coupons-header h3 { font-size: 16px; font-weight: 600; margin: 0; }
-        .how-to { font-size: 13px; color: #fc2779; font-weight: 500; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+        /* --- ACTION & DELIVERY (FIXED FLEX ISSUE) --- */
+        .action-delivery-container { border-top: 1px solid #eaeaea; padding-top: clamp(20px, 4vw, 28px); }
         
-        .coupon-rules { margin-bottom: 16px; padding-left: 16px; }
-        .coupon-rules li { font-size: 13px; color: #fc2779; margin-bottom: 6px; list-style-type: disc; }
-        .coupon-rules li span { color: #666; } 
-
-        .coupon-card { border: 1px dashed #fc2779; border-radius: 8px; background: #fff5f8; padding: 16px; position: relative; }
-        .coupon-icon-area { position: absolute; left: 16px; top: 16px; }
-        .percent-badge { position: absolute; bottom: -4px; right: -4px; background: #fc2779; color: white; font-size: 10px; font-weight: bold; border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; }
-        .coupon-details { margin-left: 40px; margin-bottom: 12px; }
-        .coupon-details h4 { margin: 0 0 4px 0; font-size: 14px; color: #001325; font-weight: 600; }
-        .coupon-details p { margin: 0; font-size: 12px; color: #757575; line-height: 1.4; }
-        .coupon-details span { color: #333; font-weight: 500; text-decoration: underline; cursor: pointer; }
+        .actions-row { 
+          display: flex; 
+          flex-direction: column; 
+          gap: 20px; 
+          margin-bottom: 24px; 
+        }
         
-        .coupon-action-row { background: #fff; border: 1px dashed #ffb3d1; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; margin-left: 40px; }
-        .coupon-action-row .code { font-size: 13px; font-weight: 600; color: #757575; }
-        .coupon-action-row .collect-btn { color: #fc2779; font-weight: 600; font-size: 14px; }
+        /* Desktop Side-by-Side */
+        @media (min-width: 600px) { 
+          .actions-row { 
+            flex-direction: row; 
+            align-items: flex-end; /* Aligns the bottoms so both heights match perfectly */
+          } 
+        }
 
-        /* --- ACTION & DELIVERY --- */
-        .action-delivery-container { border-top: 1px solid #f0f0f0; padding-top: 24px; }
-        .actions-row { display: flex; flex-direction: column; gap: 20px; margin-bottom: 20px; }
-        @media (min-width: 600px) { .actions-row { flex-direction: row; align-items: stretch; } }
+        .action-btn-wrapper {
+          flex: 1; /* Takes 1 part of space */
+          width: 100%;
+        }
 
-        .btn-add-to-bag { background: #fc2779; color: white; font-size: 16px; font-weight: 600; border-radius: 4px; padding: 16px 24px; flex: 1; transition: background 0.2s; }
+        .btn-add-to-bag { 
+          background: #fc2779; 
+          color: white; 
+          font-size: clamp(14px, 2vw, 16px); 
+          font-weight: 600; 
+          border-radius: 4px; 
+          padding: 0 24px; 
+          height: 48px; /* Fixed height for exact matching */
+          width: 100%;
+          display: flex; 
+          align-items: center; 
+          justify-content: center;
+          white-space: nowrap; /* CRITICAL: Stops button from squishing into a tall column */
+          transition: background 0.2s; 
+        }
         .btn-add-to-bag:hover { background: #e80071; }
         .btn-add-to-bag.added { background: #008945; }
         
-        .delivery-check { flex: 1; border-left: none; padding-left: 0; }
-        @media (min-width: 600px) { .delivery-check { border-left: 1px solid #f0f0f0; padding-left: 20px; } }
+        .delivery-check { 
+          flex: 1.2; /* Takes slightly more space than button on desktop */
+          width: 100%; 
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
+        }
         
-        .delivery-header { font-size: 14px; color: #333; display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
-        .pin-input-group { display: flex; border: 1px solid #eaeaea; border-radius: 4px; overflow: hidden; }
-        .pin-input-group input { flex: 1; padding: 12px; border: none; outline: none; font-size: 14px; }
-        .pin-input-group button { color: #fc2779; font-weight: 600; padding: 0 16px; font-size: 14px; background: #fff; border-left: 1px solid #eaeaea; }
+        .delivery-header { 
+          font-size: clamp(13px, 2vw, 14px); 
+          color: #333; 
+          display: flex; 
+          align-items: center; 
+          gap: 6px; 
+          margin-bottom: 8px; 
+          height: 20px; /* Pre-define height so alignment is perfect */
+        }
+        
+        .pin-input-group { 
+          display: flex; 
+          border: 1px solid #eaeaea; 
+          border-radius: 4px; 
+          overflow: hidden; 
+          width: 100%; 
+          height: 48px; /* Matches Button Height exactly */
+        }
+        
+        .pin-input-group input { 
+          flex: 1; 
+          padding: 0 16px; 
+          border: none; 
+          outline: none; 
+          font-size: clamp(13px, 2vw, 14px); 
+          min-width: 0; /* Prevents input from breaking flex layout */
+        }
+        
+        .pin-input-group button { 
+          color: #fc2779; 
+          font-weight: 600; 
+          padding: 0 clamp(12px, 2vw, 20px); 
+          font-size: clamp(13px, 2vw, 14px); 
+          background: #fff; 
+          border-left: 1px solid #eaeaea; 
+        }
 
-        .trust-badges { display: flex; flex-wrap: wrap; gap: 16px; background: #f9f9f9; padding: 12px 16px; border-radius: 4px; font-size: 12px; color: #555; align-items: center; }
-        .trust-badges .badge { display: flex; align-items: center; gap: 6px; }
-        .trust-badges .sold-by { margin-left: auto; color: #333; font-weight: 500; }
+        /* --- TRUST BADGES --- */
+        .trust-badges { 
+          display: flex; flex-wrap: wrap; gap: clamp(12px, 2vw, 24px); 
+          background: #f9fafb; padding: clamp(12px, 2vw, 16px) clamp(16px, 3vw, 20px); 
+          border-radius: 6px; border: 1px solid #f0f0f0;
+          align-items: center; justify-content: flex-start;
+        }
+        .trust-badges .badge { 
+          display: flex; align-items: center; gap: 8px; 
+          font-size: clamp(12px, 1.8vw, 13px); font-weight: 500; color: #444; 
+        }
 
         /* ================= BOTTOM SECTION (Tabs & Sticky) ================= */
-        .product-bottom-section { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
-        @media (min-width: 1024px) { .product-bottom-section { grid-template-columns: 1fr 300px; gap: 30px; } }
+        .product-bottom-section { display: grid; grid-template-columns: 1fr; gap: clamp(20px, 3vw, 30px); align-items: start; }
+        
+        @media (min-width: 1024px) { 
+          .product-bottom-section { grid-template-columns: minmax(0, 1fr) 320px; } 
+        }
 
-        .section-title { font-size: 18px; font-weight: 600; color: #001325; margin: 0 0 16px 0; }
+        .section-title { font-size: clamp(18px, 2.5vw, 20px); font-weight: 600; color: #111; margin: 0 0 16px 0; }
 
         /* --- TABS --- */
-        .tabs-wrapper { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden; }
-        .tabs-header { display: flex; border-bottom: 1px solid #f0f0f0; }
-        .tab-btn { padding: 16px 24px; font-size: 15px; font-weight: 500; color: #666; border-bottom: 2px solid transparent; transition: all 0.2s; }
-        .tab-btn.active { color: #fc2779; border-bottom-color: #fc2779; }
+        .tabs-wrapper { background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.03); border: 1px solid #eaeaea; overflow: hidden; width: 100%; }
+        .tabs-header { 
+          display: flex; border-bottom: 1px solid #eaeaea; 
+          overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch;
+        }
+        .tab-btn { 
+          padding: clamp(16px, 2vw, 20px) clamp(20px, 3vw, 32px); 
+          font-size: clamp(14px, 2vw, 15px); font-weight: 500; color: #666; 
+          border-bottom: 2px solid transparent; transition: all 0.2s; 
+          white-space: nowrap; flex-shrink: 0;
+        }
+        .tab-btn.active { color: #fc2779; border-bottom-color: #fc2779; color: #111;}
         
-        .tab-content { padding: 24px; }
-        .tab-placeholder { color: #757575; font-size: 14px; text-align: center; padding: 40px 0; }
+        .tab-content { padding: clamp(20px, 4vw, 32px); }
+        .tab-placeholder { color: #757575; font-size: clamp(13px, 2vw, 14px); text-align: center; padding: 40px 0; }
         
         /* Description Content styling */
-        .description-body { color: #444; font-size: 14px; line-height: 1.6; max-height: 200px; overflow: hidden; position: relative; }
+        .description-body { 
+          color: #444; font-size: clamp(14px, 2vw, 15px); line-height: 1.7; 
+          max-height: 250px; overflow: hidden; position: relative; 
+          word-wrap: break-word;
+        }
         .description-body.expanded { max-height: none; }
-        .description-body p { margin-bottom: 12px; }
-        .description-body ul { padding-left: 20px; margin-bottom: 12px; }
-        .description-body li { list-style: disc; margin-bottom: 6px; }
+        .description-body p { margin-bottom: 14px; }
+        .description-body ul { padding-left: 20px; margin-bottom: 14px; }
+        .description-body li { list-style: disc; margin-bottom: 8px; }
         .description-body.expanded::after { display: none; }
-        .description-body:not(.expanded)::after { content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: 60px; background: linear-gradient(to top, white, transparent); pointer-events: none; }
+        .description-body:not(.expanded)::after { 
+          content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: 80px; 
+          background: linear-gradient(to top, white, transparent); pointer-events: none; 
+        }
         
         .read-more-btn { display: flex; align-items: center; gap: 4px; color: #fc2779; font-weight: 600; font-size: 14px; margin-top: 16px; padding: 0; }
 
         /* --- STICKY SIDEBAR --- */
         .sticky-sidebar { display: none; }
-        @media (min-width: 1024px) { .sticky-sidebar { display: block; position: sticky; top: 100px; } }
-        .sticky-card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 16px; }
-        .sticky-card img { width: 100%; height: 180px; object-fit: contain; border-radius: 4px; }
-        .sticky-details .title { font-size: 14px; font-weight: 500; margin: 0 0 12px 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .sticky-details .price-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        @media (min-width: 1024px) { 
+          .sticky-sidebar { display: block; position: sticky; top: 100px; width: 100%; align-self: start; } 
+        }
+        
+        .sticky-card { 
+          background: #fff; padding: 24px; border-radius: 12px; border: 1px solid #eaeaea;
+          box-shadow: 0 4px 16px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 16px; 
+        }
+        .sticky-card img { width: 100%; height: 200px; object-fit: contain; border-radius: 8px; }
+        .sticky-details .title { 
+          font-size: 15px; font-weight: 500; margin: 0 0 12px 0; line-height: 1.4; color: #111;
+          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; 
+        }
+        .sticky-details .price-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
         .sticky-details .mrp { font-size: 14px; color: #999; text-decoration: line-through; }
-        .sticky-details .current { font-size: 18px; font-weight: 700; }
-        .sticky-details .discount { font-size: 12px; color: #008945; font-weight: 600; }
+        .sticky-details .current { font-size: 20px; font-weight: 700; color: #111; }
+        .sticky-details .discount { font-size: 13px; color: #008945; font-weight: 600; }
         .sticky-details .stars { display: flex; align-items: center; gap: 2px; }
         .sticky-details .count { font-size: 12px; color: #757575; margin-left: 6px; }
-        .sticky-btn { padding: 12px; font-size: 15px; }
+        .sticky-btn { padding: 0; height: 48px; font-size: 15px; }
 
         /* --- RELATED --- */
-        .related-section { margin-top: 40px; }
+        .related-section { margin-top: clamp(40px, 8vw, 60px); }
         .text-center { text-align: center; }
-        .related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .related-grid { 
+          display: grid; 
+          grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
+          gap: clamp(16px, 3vw, 24px); 
+        }
+        @media (min-width: 600px) {
+          .related-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+        }
 
         /* --- UTILS / SKELETON --- */
-        .page-container { max-width: 1280px; margin: 0 auto; padding: 40px 5%; }
-        .skeleton-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
-        .skeleton { background: #e0e0e0; border-radius: 4px; }
+        .page-container { max-width: 1280px; margin: 0 auto; padding: 40px 5%; width: 100%; }
+        .skeleton-grid { display: grid; grid-template-columns: 1fr; gap: clamp(20px, 4vw, 40px); }
+        @media (min-width: 900px) { .skeleton-grid { grid-template-columns: 1fr 1fr; } }
+        
+        .skeleton { background: #e0e0e0; border-radius: 4px; width: 100%; }
         .shimmer { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmerAnim 1.5s infinite; }
         @keyframes shimmerAnim { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        
         .thumb-col { width: 70px; height: 300px; display: none; }
         @media(min-width: 768px){ .thumb-col { display: block; } }
-        .main-img-skel { height: 400px; }
+        .main-img-skel { height: clamp(300px, 50vh, 400px); }
         
-        .not-found-container { text-align: center; padding: 100px 20px; background: #fff; height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .not-found-container h2 { font-size: 24px; margin-bottom: 10px; }
+        .not-found-container { text-align: center; padding: clamp(40px, 10vw, 100px) 20px; background: #fff; height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .not-found-container h2 { font-size: clamp(20px, 4vw, 24px); margin-bottom: 10px; }
         .btn-primary { background: #fc2779; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: 500; }
       `}</style>
     </div>
