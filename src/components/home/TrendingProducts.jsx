@@ -26,18 +26,23 @@ export default function StoreFrontUI() {
     loadProducts();
   }, []);
 
-  // Helper to get a product
+  // Helper to get a product (Now includes price extraction)
   const getProduct = (index) => {
     if (apiProducts.length === 0) {
       return {
         image: `https://via.placeholder.com/800x600/FCE4EC/E8437F?text=Loading+${index + 1}`,
         link: "#",
+        price: "...",
+        regularPrice: null,
       };
     }
     const product = apiProducts[index % apiProducts.length];
     return {
       image: product.images[0].src,
       link: `/product/${product.slug || product.id}`, 
+      // Safely grab WooCommerce price data and format with currency symbol
+      price: product.price ? `₹${product.price}` : "",
+      regularPrice: product.regular_price && product.regular_price !== product.price ? `₹${product.regular_price}` : null,
     };
   };
 
@@ -65,6 +70,10 @@ export default function StoreFrontUI() {
                 <div className="sf-card-body">
                   <h3>{item.title}</h3>
                   <p>{item.desc}</p>
+                  <div className="sf-price-wrap">
+                    {prod.regularPrice && <span className="sf-regular-price">{prod.regularPrice}</span>}
+                    {prod.price && <span className="sf-price">{prod.price}</span>}
+                  </div>
                 </div>
               </Link>
             );
@@ -91,6 +100,10 @@ export default function StoreFrontUI() {
                 <div className="sf-card-body">
                   <h3>{item.title}</h3>
                   <p>{item.desc}</p>
+                  <div className="sf-price-wrap">
+                    {prod.regularPrice && <span className="sf-regular-price">{prod.regularPrice}</span>}
+                    {prod.price && <span className="sf-price">{prod.price}</span>}
+                  </div>
                 </div>
               </Link>
             );
@@ -118,6 +131,10 @@ export default function StoreFrontUI() {
                 <div className="sf-card-body">
                   <h3>{item.title}</h3>
                   <p>{item.desc}</p>
+                  <div className="sf-price-wrap">
+                    {prod.regularPrice && <span className="sf-regular-price">{prod.regularPrice}</span>}
+                    {prod.price && <span className="sf-price">{prod.price}</span>}
+                  </div>
                 </div>
               </Link>
             );
@@ -156,7 +173,12 @@ export default function StoreFrontUI() {
               <Link href={prod.link} className="sf-card-small" key={i}>
                 <div className="sf-card-img"><img src={prod.image} alt="Skin" /></div>
                 <div className="sf-card-body">
-                  <h3>{item.title}</h3><p>{item.desc}</p>
+                  <h3>{item.title}</h3>
+                  <p>{item.desc}</p>
+                  <div className="sf-price-wrap">
+                    {prod.regularPrice && <span className="sf-regular-price">{prod.regularPrice}</span>}
+                    {prod.price && <span className="sf-price">{prod.price}</span>}
+                  </div>
                 </div>
               </Link>
             );
@@ -214,9 +236,9 @@ export default function StoreFrontUI() {
           display: block;
         }
 
-        /* NEW: Categories in Focus - smaller image control */
+        /* Categories in Focus - smaller image control */
         .sf-focus-card img {
-          height: clamp(150px, 25vw, 250px); /* Keeps the images nicely sized, not massive */
+          height: clamp(150px, 25vw, 250px);
         }
 
         /* SCROLLABLE ROWS WITH VISIBLE SCROLLBAR & GAPS */
@@ -224,8 +246,8 @@ export default function StoreFrontUI() {
           display: flex;
           overflow-x: auto;
           scroll-snap-type: x mandatory;
-          gap: 24px; /* Increased gap between products */
-          padding-bottom: 16px; /* Space for scrollbar */
+          gap: 24px; 
+          padding-bottom: 16px; 
           padding-top: 12px;
           
           /* Firefox Scrollbar styling */
@@ -235,7 +257,7 @@ export default function StoreFrontUI() {
 
         /* Webkit Custom Scrollbar (Chrome, Safari, Edge) */
         .sf-scroll-row::-webkit-scrollbar { 
-          height: 8px; /* Thickness of scrollbar */
+          height: 8px; 
         }
         .sf-scroll-row::-webkit-scrollbar-track {
           background: #f5f5f5; 
@@ -246,7 +268,7 @@ export default function StoreFrontUI() {
           border-radius: 10px;
         }
         .sf-scroll-row::-webkit-scrollbar-thumb:hover {
-          background: #a8a8a8; /* Darker on hover */
+          background: #a8a8a8; 
         }
         
         /* Grids */
@@ -298,7 +320,7 @@ export default function StoreFrontUI() {
           .sf-scroll-row .sf-card-small { flex: 0 0 35%; }
         }
         @media (min-width: 1024px) {
-          .sf-scroll-row .sf-card { flex: 0 0 280px; } /* Fixed uniform width on desktop */
+          .sf-scroll-row .sf-card { flex: 0 0 280px; } 
           .sf-scroll-row .sf-card-small { flex: 0 0 220px; }
         }
 
@@ -333,6 +355,24 @@ export default function StoreFrontUI() {
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
+        }
+
+        /* NEW PRICE STYLES */
+        .sf-price-wrap {
+          margin-top: 8px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .sf-price {
+          font-weight: 700;
+          color: #E8437F;
+          font-size: clamp(14px, 2vw, 16px);
+        }
+        .sf-regular-price {
+          text-decoration: line-through;
+          color: #999;
+          font-size: clamp(12px, 1.5vw, 14px);
         }
 
         /* Mini Cards */
