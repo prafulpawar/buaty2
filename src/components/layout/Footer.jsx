@@ -19,38 +19,28 @@ import {
 
 export default function Footer() {
   return (
-    <footer style={{ width: "100%", fontFamily: "sans-serif" }}>
+    <footer className="footer-wrapper">
       
-      {/* 1. TOP BAND - Dark Slate (Exact Nykaa Style) */}
-      <div style={{ background: "#3f414d", color: "#ffffff", padding: "60px 5vw" }}>
-        <div 
-          style={{ 
-            maxWidth: "1440px", 
-            margin: "0 auto", 
-            display: "grid", 
-            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", 
-            gap: "40px" 
-          }}
-        >
+      {/* 1. TOP BAND - Dark Slate */}
+      <div className="footer-top-band">
+        <div className="footer-top-grid">
           
           {/* Column 1: Brand */}
-          <div>
-            <h4 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "20px", fontStyle: "italic", letterSpacing: "1px" }}>
-              GLAMOUR
-            </h4>
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              <p style={{ fontSize: "14px", color: "#d2d6db", lineHeight: "1.6" }}>
+          <div className="footer-col">
+            <h4 className="brand-title">GLAMOUR</h4>
+            <div className="footer-links-col">
+              <p className="brand-desc">
                 Your destination for prestige beauty. Discover luxury skincare, makeup rituals, and haute perfumery from the world&apos;s most iconic houses.
               </p>
             </div>
           </div>
 
           {/* Column 2: Prestige Shop */}
-          <div>
-            <h4 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px" }}>Prestige Shop</h4>
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div className="footer-col">
+            <h4 className="col-title">Prestige Shop</h4>
+            <div className="footer-links-col">
               {["Skincare Rituals", "Luxury Makeup", "Haute Fragrance", "Botanical Haircare", "Bath & Body", "VIP Gift Sets"].map((item) => (
-                <Link key={item} href="/category/all" className="footer-link-dark">
+                <Link key={item} href="#" className="footer-link-dark">
                   {item}
                 </Link>
               ))}
@@ -58,9 +48,9 @@ export default function Footer() {
           </div>
 
           {/* Column 3: Client Care */}
-          <div>
-            <h4 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px" }}>Client Care</h4>
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div className="footer-col">
+            <h4 className="col-title">Client Care</h4>
+            <div className="footer-links-col">
               {["Contact Beauty Advisor", "Complimentary Returns", "Order Tracking & Delivery", "VIP Beauty FAQs", "Authenticity Guarantee", "Terms of Ritual"].map((item) => (
                 <Link key={item} href="#" className="footer-link-dark">
                   {item}
@@ -70,19 +60,19 @@ export default function Footer() {
           </div>
 
           {/* Column 4: Contact & Boutique */}
-          <div>
-            <h4 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px" }}>Flagship Boutique</h4>
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", color: "#d2d6db", fontSize: "14px", lineHeight: "1.5" }}>
-                <MapPin size={18} color="#ffffff" style={{ flexShrink: 0, marginTop: "2px" }} />
+          <div className="footer-col">
+            <h4 className="col-title">Flagship Boutique</h4>
+            <div className="footer-links-col contact-col">
+              <div className="contact-item">
+                <MapPin size={18} color="#ffffff" className="contact-icon" />
                 <span>128 Regent Street, Mayfair, London, W1B 5SE, UK</span>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px", color: "#d2d6db", fontSize: "14px" }}>
-                <Mail size={18} color="#ffffff" style={{ flexShrink: 0 }} />
+              <div className="contact-item">
+                <Mail size={18} color="#ffffff" className="contact-icon" />
                 <span>concierge@glamourbeauty.com</span>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px", color: "#d2d6db", fontSize: "14px" }}>
-                <Phone size={18} color="#ffffff" style={{ flexShrink: 0 }} />
+              <div className="contact-item">
+                <Phone size={18} color="#ffffff" className="contact-icon" />
                 <span>+44 (0) 20 7946 0128</span>
               </div>
             </div>
@@ -91,60 +81,51 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* 2. MIDDLE BAND - Off White Trust Badges (Exact Nykaa Style) */}
-      <div style={{ background: "#f3f4f5", padding: "30px 5vw" }}>
-        <div 
-          style={{ 
-            maxWidth: "1440px", 
-            margin: "0 auto", 
-            display: "flex", 
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: "30px"
-          }}
-        >
+      {/* 2. MIDDLE BAND - Off White Trust Badges */}
+      <div className="footer-middle-band">
+        <div className="footer-middle-container">
+          
           {/* Trust Badges */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "40px" }}>
+          <div className="trust-badges-wrapper">
             
             <div className="trust-badge">
               <div className="pink-circle"><Truck size={20} color="#ffffff" /></div>
-              <div>
-                <div style={{ fontSize: "14px", fontWeight: "600", color: "#3f414d" }}>COMPLIMENTARY SHIPPING</div>
-                <div style={{ fontSize: "12px", color: "#8a8d93", marginTop: "2px" }}>On Prestige Orders</div>
+              <div className="trust-badge-text">
+                <div className="trust-badge-title">COMPLIMENTARY SHIPPING</div>
+                <div className="trust-badge-sub">On Prestige Orders</div>
               </div>
             </div>
 
             <div className="trust-badge">
               <div className="pink-circle"><RefreshCw size={20} color="#ffffff" /></div>
-              <div>
-                <div style={{ fontSize: "14px", fontWeight: "600", color: "#3f414d" }}>EASY RETURNS</div>
-                <div style={{ fontSize: "12px", color: "#8a8d93", marginTop: "2px" }}>15-Day Return Policy</div>
+              <div className="trust-badge-text">
+                <div className="trust-badge-title">EASY RETURNS</div>
+                <div className="trust-badge-sub">15-Day Return Policy</div>
               </div>
             </div>
 
             <div className="trust-badge">
               <div className="pink-circle"><CheckCircle size={20} color="#ffffff" /></div>
-              <div>
-                <div style={{ fontSize: "14px", fontWeight: "600", color: "#3f414d" }}>100% AUTHENTIC</div>
-                <div style={{ fontSize: "12px", color: "#8a8d93", marginTop: "2px" }}>Products Sourced Directly</div>
+              <div className="trust-badge-text">
+                <div className="trust-badge-title">100% AUTHENTIC</div>
+                <div className="trust-badge-sub">Products Sourced Directly</div>
               </div>
             </div>
 
             <div className="trust-badge">
               <div className="pink-circle"><Award size={20} color="#ffffff" /></div>
-              <div>
-                <div style={{ fontSize: "14px", fontWeight: "600", color: "#3f414d" }}>LUXURY BRANDS</div>
-                <div style={{ fontSize: "12px", color: "#8a8d93", marginTop: "2px" }}>World&apos;s Best Houses</div>
+              <div className="trust-badge-text">
+                <div className="trust-badge-title">LUXURY BRANDS</div>
+                <div className="trust-badge-sub">World&apos;s Best Houses</div>
               </div>
             </div>
 
           </div>
 
-          {/* Social Icons mapped securely using react-icons */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "10px" }}>
-            <span style={{ fontSize: "14px", color: "#3f414d", fontWeight: "500" }}>Show us some love on social media</span>
-            <div style={{ display: "flex", gap: "10px" }}>
+          {/* Social Icons */}
+          <div className="social-section">
+            <span className="social-title">Show us some love on social media</span>
+            <div className="social-icons-wrapper">
               {[FaInstagram, FaFacebookF, FaYoutube, FaTwitter, FaPinterestP].map((Icon, idx) => (
                 <a key={idx} href="#" className="black-social-icon">
                   <Icon size={14} color="#ffffff" />
@@ -155,23 +136,64 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* 3. BOTTOM BAND - Hot Pink (Exact Nykaa Style) */}
-      <div style={{ background: "#fc2779", color: "#ffffff", padding: "24px 20px", textAlign: "center" }}>
-        <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: "16px", marginBottom: "12px" }}>
+      {/* 3. BOTTOM BAND - Hot Pink */}
+      <div className="footer-bottom-band">
+        <div className="footer-bottom-links">
           {["Terms & Condition", "Shipping Policy", "Cancellation Policy", "Privacy Policy"].map((item) => (
             <Link key={item} href="#" className="pink-footer-link">
               {item}
             </Link>
           ))}
         </div>
-        <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.9)", margin: 0 }}>
+        <p className="footer-copyright">
           © 2026 GLAMOUR Beauty Ltd. All prestige rights reserved.
         </p>
       </div>
 
-      {/* Styles */}
+      {/* Responsive Styles */}
       <style>{`
-        /* Links in the dark gray section */
+        /* --- General Layout --- */
+        .footer-wrapper {
+          width: 100%;
+          font-family: sans-serif;
+        }
+
+        /* --- 1. Top Band --- */
+        .footer-top-band {
+          background: #3f414d;
+          color: #ffffff;
+          padding: 60px 5vw;
+        }
+        .footer-top-grid {
+          max-width: 1440px;
+          margin: 0 auto;
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 40px;
+        }
+        .brand-title {
+          font-size: 18px;
+          font-weight: 600;
+          margin-bottom: 20px;
+          font-style: italic;
+          letter-spacing: 1px;
+        }
+        .col-title {
+          font-size: 16px;
+          font-weight: 600;
+          margin-bottom: 20px;
+        }
+        .footer-links-col {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .brand-desc {
+          font-size: 14px;
+          color: #d2d6db;
+          line-height: 1.6;
+          margin: 0;
+        }
         .footer-link-dark {
           font-size: 14px;
           color: #d2d6db;
@@ -181,26 +203,47 @@ export default function Footer() {
         .footer-link-dark:hover {
           color: #fc2779;
         }
-
-        /* Links in the hot pink section */
-        .pink-footer-link {
-          font-size: 13px;
-          color: #ffffff;
-          text-decoration: none;
-          transition: opacity 0.2s ease;
+        .contact-col {
+          gap: 16px;
         }
-        .pink-footer-link:hover {
-          opacity: 0.8;
-          text-decoration: underline;
+        .contact-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          color: #d2d6db;
+          font-size: 14px;
+          line-height: 1.5;
+        }
+        .contact-icon {
+          flex-shrink: 0;
+          margin-top: 2px;
         }
 
-        /* Trust Badges in the light gray section */
+        /* --- 2. Middle Band --- */
+        .footer-middle-band {
+          background: #f3f4f5;
+          padding: 30px 5vw;
+        }
+        .footer-middle-container {
+          max-width: 1440px;
+          margin: 0 auto;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 40px;
+        }
+        .trust-badges-wrapper {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 30px;
+          flex: 1;
+        }
         .trust-badge {
           display: flex;
           align-items: center;
           gap: 12px;
         }
-        
         .pink-circle {
           width: 44px;
           height: 44px;
@@ -209,9 +252,33 @@ export default function Footer() {
           display: flex;
           align-items: center;
           justify-content: center;
+          flex-shrink: 0;
         }
-
-        /* Black Social Icons matching screenshot */
+        .trust-badge-title {
+          font-size: 14px;
+          font-weight: 600;
+          color: #3f414d;
+        }
+        .trust-badge-sub {
+          font-size: 12px;
+          color: #8a8d93;
+          margin-top: 2px;
+        }
+        .social-section {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 10px;
+        }
+        .social-title {
+          font-size: 14px;
+          color: #3f414d;
+          font-weight: 500;
+        }
+        .social-icons-wrapper {
+          display: flex;
+          gap: 10px;
+        }
         .black-social-icon {
           width: 32px;
           height: 32px;
@@ -225,6 +292,100 @@ export default function Footer() {
         }
         .black-social-icon:hover {
           background-color: #fc2779;
+        }
+
+        /* --- 3. Bottom Band --- */
+        .footer-bottom-band {
+          background: #fc2779;
+          color: #ffffff;
+          padding: 24px 20px;
+          text-align: center;
+        }
+        .footer-bottom-links {
+          display: flex;
+          justify-content: center;
+          flex-wrap: wrap;
+          gap: 16px;
+          margin-bottom: 12px;
+        }
+        .pink-footer-link {
+          font-size: 13px;
+          color: #ffffff;
+          text-decoration: none;
+          transition: opacity 0.2s ease;
+        }
+        .pink-footer-link:hover {
+          opacity: 0.8;
+          text-decoration: underline;
+        }
+        .footer-copyright {
+          font-size: 13px;
+          color: rgba(255,255,255,0.9);
+          margin: 0;
+        }
+
+        /* =========================================
+           MEDIA QUERIES FOR RESPONSIVENESS
+           ========================================= */
+
+        /* TABLET & SMALL LAPTOPS (Max 1024px) */
+        @media (max-width: 1024px) {
+          .footer-top-grid {
+            grid-template-columns: repeat(2, 1fr); /* 2 columns on tablet */
+            gap: 40px 30px;
+          }
+          .footer-middle-container {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          .social-section {
+            width: 100%;
+            border-top: 1px solid #e2e4e8;
+            padding-top: 20px;
+          }
+        }
+
+        /* MOBILE DEVICES (Max 768px) */
+        @media (max-width: 768px) {
+          .footer-top-band {
+            padding: 40px 5vw;
+          }
+          .footer-top-grid {
+            grid-template-columns: 1fr; /* 1 column on mobile */
+            gap: 30px;
+          }
+          .trust-badges-wrapper {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2x2 grid for badges on mobile */
+            gap: 20px;
+            width: 100%;
+          }
+          .trust-badge {
+            flex-direction: column;
+            text-align: center;
+            align-items: center;
+            gap: 8px;
+          }
+          .social-section {
+            align-items: center;
+            text-align: center;
+          }
+          .footer-bottom-links {
+            gap: 12px 20px;
+            line-height: 1.8;
+          }
+        }
+
+        /* EXTRA SMALL MOBILE (Max 480px) */
+        @media (max-width: 480px) {
+          .trust-badges-wrapper {
+            grid-template-columns: 1fr; /* Stack badges 1 by 1 on very small screens */
+          }
+          .trust-badge {
+            flex-direction: row;
+            text-align: left;
+            align-items: center;
+          }
         }
       `}</style>
     </footer>
