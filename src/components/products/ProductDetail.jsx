@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { 
-  Star, Heart, ChevronRight, ChevronUp, ChevronDown, 
+  Star, ChevronRight, ChevronUp, ChevronDown, 
   MapPin, ShieldCheck, RotateCcw
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
@@ -17,6 +17,7 @@ export default function ProductDetail() {
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [mobileIndex, setMobileIndex] = useState(0); // State for mobile slider dots
   const [addedToCart, setAddedToCart] = useState(false);
   
   // Tabs state
@@ -64,6 +65,12 @@ export default function ProductDetail() {
     setTimeout(() => setAddedToCart(false), 2000);
   };
 
+  const handleMobileScroll = (e) => {
+    // Calculate which image is currently in view based on scroll position
+    const index = Math.round(e.target.scrollLeft / e.target.clientWidth);
+    setMobileIndex(index);
+  };
+
   if (loading) {
     return (
       <div className="page-container loading-state">
@@ -91,7 +98,7 @@ export default function ProductDetail() {
     );
   }
 
-  const images = product.images || [];
+  const images = product.images?.length > 0 ? product.images : [{ src: "/placeholder.jpg" }];
   const price = parseFloat(product.price) || 0;
   const regularPrice = parseFloat(product.regular_price) || 0;
   const salePrice = parseFloat(product.sale_price) || 0;
@@ -124,6 +131,7 @@ export default function ProductDetail() {
           
           {/* GALLERY */}
           <div className="gallery-container">
+            {/* Desktop Thumbnails (Hidden on mobile) */}
             <div className="thumbnail-column">
               <button className="nav-arrow"><ChevronUp size={20} color="#666" /></button>
               <div className="thumbnail-list hide-scroll">
@@ -141,12 +149,36 @@ export default function ProductDetail() {
             </div>
             
             <div className="main-image-wrapper">
-              <button className="wishlist-icon"><Heart size={20} color="#fc2779" /></button>
-              <img 
-                src={images[selectedImage]?.src || "/placeholder.jpg"} 
-                alt={product.name}
-                className="main-image"
-              />
+              
+              {/* DESKTOP IMAGE VIEW (Hidden on Mobile) */}
+              <div className="desktop-image-view">
+                <img 
+                  src={images[selectedImage]?.src || "/placeholder.jpg"} 
+                  alt={product.name}
+                  className="main-image"
+                />
+              </div>
+
+              {/* MOBILE SLIDER VIEW (Hidden on Desktop) */}
+              <div className="mobile-slider-view hide-scroll" onScroll={handleMobileScroll}>
+                {images.map((img, idx) => (
+                  <img 
+                    key={idx}
+                    src={img.src} 
+                    alt={`${product.name} image ${idx + 1}`}
+                    className="slider-image"
+                  />
+                ))}
+              </div>
+
+              {/* MOBILE DOTS INDICATOR */}
+              {images.length > 1 && (
+                <div className="mobile-dots">
+                  {images.map((_, i) => (
+                    <div key={i} className={`dot ${i === mobileIndex ? 'active' : ''}`} />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -354,6 +386,7 @@ export default function ProductDetail() {
           padding: clamp(16px, 3vw, 24px);
           border-bottom: 1px solid #eaeaea;
           width: 100%;
+          position: relative; /* For dots positioning */
         }
         @media (min-width: 900px) {
           .gallery-container {
@@ -404,32 +437,76 @@ export default function ProductDetail() {
         .main-image-wrapper {
           flex: 1;
           position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
           background: #ffffff;
           border-radius: 8px;
           min-height: clamp(250px, 40vh, 450px);
           width: 100%;
           overflow: hidden;
         }
-        .wishlist-icon {
-          position: absolute;
-          top: clamp(8px, 2vw, 16px); 
-          right: clamp(8px, 2vw, 16px);
-          background: #fff;
-          border-radius: 50%;
-          width: clamp(32px, 5vw, 40px); 
-          height: clamp(32px, 5vw, 40px);
-          display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-          z-index: 2;
+
+        /* Desktop specific single image view */
+        .desktop-image-view {
+          display: none;
+          width: 100%;
+          height: 100%;
+          align-items: center;
+          justify-content: center;
         }
         .main-image {
           width: 100%;
           max-width: 85%;
           max-height: clamp(250px, 40vh, 450px);
           object-fit: contain;
+        }
+
+        /* Mobile specific slider view */
+        .mobile-slider-view {
+          display: flex;
+          width: 100%;
+          height: 100%;
+          overflow-x: auto;
+          scroll-snap-type: x mandatory;
+          scroll-behavior: smooth;
+          -webkit-overflow-scrolling: touch;
+        }
+        .slider-image {
+          flex: 0 0 100%;
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          scroll-snap-align: center;
+          padding: 24px;
+        }
+
+        /* Dots indicator */
+        .mobile-dots {
+          position: absolute;
+          bottom: 12px;
+          left: 0;
+          right: 0;
+          display: flex;
+          justify-content: center;
+          gap: 6px;
+          z-index: 10;
+        }
+        .mobile-dots .dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #e0e0e0;
+          transition: all 0.3s ease;
+        }
+        .mobile-dots .dot.active {
+          background: #fc2779;
+          width: 14px;
+          border-radius: 4px;
+        }
+
+        /* Toggle Slider vs Single Image based on Screen Size */
+        @media (min-width: 900px) {
+          .desktop-image-view { display: flex; }
+          .mobile-slider-view { display: none; }
+          .mobile-dots { display: none; }
         }
 
         /* --- PRODUCT INFO RIGHT SIDE --- */
@@ -479,12 +556,12 @@ export default function ProductDetail() {
         @media (min-width: 600px) { 
           .actions-row { 
             flex-direction: row; 
-            align-items: flex-end; /* Aligns the bottoms so both heights match perfectly */
+            align-items: flex-end; 
           } 
         }
 
         .action-btn-wrapper {
-          flex: 1; /* Takes 1 part of space */
+          flex: 1; 
           width: 100%;
         }
 
@@ -495,19 +572,19 @@ export default function ProductDetail() {
           font-weight: 600; 
           border-radius: 4px; 
           padding: 0 24px; 
-          height: 48px; /* Fixed height for exact matching */
+          height: 48px; 
           width: 100%;
           display: flex; 
           align-items: center; 
           justify-content: center;
-          white-space: nowrap; /* CRITICAL: Stops button from squishing into a tall column */
+          white-space: nowrap; 
           transition: background 0.2s; 
         }
         .btn-add-to-bag:hover { background: #e80071; }
         .btn-add-to-bag.added { background: #008945; }
         
         .delivery-check { 
-          flex: 1.2; /* Takes slightly more space than button on desktop */
+          flex: 1.2; 
           width: 100%; 
           display: flex;
           flex-direction: column;
@@ -521,7 +598,7 @@ export default function ProductDetail() {
           align-items: center; 
           gap: 6px; 
           margin-bottom: 8px; 
-          height: 20px; /* Pre-define height so alignment is perfect */
+          height: 20px; 
         }
         
         .pin-input-group { 
@@ -530,7 +607,7 @@ export default function ProductDetail() {
           border-radius: 4px; 
           overflow: hidden; 
           width: 100%; 
-          height: 48px; /* Matches Button Height exactly */
+          height: 48px; 
         }
         
         .pin-input-group input { 
@@ -539,7 +616,7 @@ export default function ProductDetail() {
           border: none; 
           outline: none; 
           font-size: clamp(13px, 2vw, 14px); 
-          min-width: 0; /* Prevents input from breaking flex layout */
+          min-width: 0; 
         }
         
         .pin-input-group button { 

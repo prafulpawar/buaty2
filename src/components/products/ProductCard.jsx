@@ -1,17 +1,18 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { Heart, Star, ShoppingBag, Check } from "lucide-react";
+import { Star, ShoppingBag, Check } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 
 export default function ProductCard({ product }) {
   const { addToCart } = useCart();
-  const [wishlisted, setWishlisted] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [added, setAdded] = useState(false);
 
   // Fallbacks & Parsing
-  const img = product?.images?.[0]?.src || "/placeholder.jpg";
+  // Get all images for the slider, fallback to placeholder if none exist
+  const images = product?.images?.length > 0 ? product.images : [{ src: "/placeholder.jpg" }];
+  
   const price = parseFloat(product?.price) || 0;
   const regularPrice = parseFloat(product?.regular_price) || 0;
   const salePrice = parseFloat(product?.sale_price) || 0;
@@ -26,7 +27,6 @@ export default function ProductCard({ product }) {
     e.stopPropagation(); 
     
     if (product) {
-      // बिल्कुल आपके पहले (Flipkart वाले) कोड की तरह
       addToCart(product); 
       setAdded(true);
       setTimeout(() => setAdded(false), 2000); 
@@ -41,7 +41,7 @@ export default function ProductCard({ product }) {
     >
       <div className="card-link-wrapper">
         
-        {/* --- 1. IMAGE & BADGES --- */}
+        {/* --- 1. IMAGE SHOWCASE & MOBILE SLIDER --- */}
         <div className="image-showcase">
           {/* Sale Badge */}
           {onSale && (
@@ -50,33 +50,32 @@ export default function ProductCard({ product }) {
             </span>
           )}
 
-          {/* Wishlist Button */}
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setWishlisted(!wishlisted);
-            }}
-            className="wishlist-action"
-            aria-label="Add to wishlist"
-          >
-            <Heart
-              size={18}
-              strokeWidth={wishlisted ? 0 : 1.5}
-              fill={wishlisted ? "#E8437F" : "none"}
-              color={wishlisted ? "#E8437F" : "#111111"}
-              style={{ transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)" }}
-            />
-          </button>
+          {/* Swipeable Image Slider (Active on Mobile) */}
+          <div className="image-slider hide-scroll">
+            {images.map((img, idx) => (
+              <Link 
+                key={idx} 
+                href={`/product/${product?.id}`} 
+                className="slide-link"
+              >
+                <img
+                  src={img.src}
+                  alt={product?.name || `Product image ${idx + 1}`}
+                  className="product-img"
+                  loading={idx === 0 ? "eager" : "lazy"}
+                />
+              </Link>
+            ))}
+          </div>
 
-          {/* Product Image wrapped in Link */}
-          <Link href={`/product/${product?.id}`} style={{ display: 'block', height: '100%' }}>
-            <img
-              src={img}
-              alt={product?.name || "Product"}
-              className="product-img"
-            />
-          </Link>
+          {/* Optional Mobile Indicator Dots (Only shows if > 1 image on mobile) */}
+          {images.length > 1 && (
+            <div className="slider-dots">
+              {images.map((_, i) => (
+                <div key={i} className="dot" />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* --- 2. PRODUCT DETAILS --- */}
@@ -133,8 +132,6 @@ export default function ProductCard({ product }) {
           </div>
           
         </div>
-
-        
       </div>
 
       <style jsx>{`
@@ -158,19 +155,32 @@ export default function ProductCard({ product }) {
           height: 100%;
         }
 
-        /* Image Showcase */
+        /* --- Image Showcase & Slider --- */
         .image-showcase {
           position: relative;
           aspect-ratio: 4/5;
           background: #F8F9FA;
           border-radius: 20px;
-          padding: 24px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
           overflow: hidden;
           margin-bottom: 16px;
           border: 1px solid rgba(0,0,0,0.02);
+        }
+
+        .image-slider {
+          display: flex;
+          width: 100%;
+          height: 100%;
+          /* Desktop default: no scroll, hide extra images */
+          overflow: hidden; 
+        }
+
+        .slide-link {
+          flex: 0 0 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 24px;
         }
 
         .product-img {
@@ -180,11 +190,59 @@ export default function ProductCard({ product }) {
           transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
           mix-blend-mode: multiply; 
         }
+
         .luxury-product-card:hover .product-img {
           transform: scale(1.08);
         }
 
-        /* Badges & Actions */
+        /* Mobile Specifics for Slider */
+        @media (max-width: 768px) {
+          .image-slider {
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on iOS */
+          }
+          .slide-link {
+            scroll-snap-align: center;
+          }
+        }
+
+        /* Hide Scrollbar for Slider */
+        .hide-scroll::-webkit-scrollbar { 
+          display: none; 
+        }
+        .hide-scroll { 
+          -ms-overflow-style: none; 
+          scrollbar-width: none; 
+        }
+
+        /* Slider Dots (Mobile Only) */
+        .slider-dots {
+          display: none;
+          position: absolute;
+          bottom: 12px;
+          left: 0;
+          right: 0;
+          justify-content: center;
+          gap: 4px;
+          z-index: 10;
+          pointer-events: none;
+        }
+        .dot {
+          width: 4px;
+          height: 4px;
+          border-radius: 50%;
+          background: rgba(0,0,0,0.2);
+        }
+        .dot:first-child {
+          background: rgba(0,0,0,0.6); /* Highlights first dot by default */
+        }
+        @media (max-width: 768px) {
+          .slider-dots { display: flex; }
+        }
+
+        /* Badges */
         .luxury-sale-badge {
           position: absolute;
           top: 16px;
@@ -197,28 +255,6 @@ export default function ProductCard({ product }) {
           padding: 6px 12px;
           border-radius: 50px;
           letter-spacing: 1px;
-        }
-
-        .wishlist-action {
-          position: absolute;
-          top: 12px;
-          right: 12px;
-          z-index: 10;
-          width: 36px;
-          height: 36px;
-          border-radius: 50%;
-          background: #ffffff;
-          border: 1px solid rgba(0,0,0,0.05);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .wishlist-action:hover {
-          transform: scale(1.1);
-          border-color: #E8437F;
         }
 
         /* Product Info Layout */
@@ -308,8 +344,8 @@ export default function ProductCard({ product }) {
 
         /* Sleek Add Button */
         .quick-add-btn {
-          position: relative; /* Added to keep it clickable */
-          z-index: 10;        /* Added to keep it clickable */
+          position: relative; 
+          z-index: 10;        
           width: 100%;
           display: flex;
           align-items: center;
