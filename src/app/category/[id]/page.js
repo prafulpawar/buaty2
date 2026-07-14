@@ -53,12 +53,19 @@ function CategoryContent() {
       const res = await fetch(url);
       const data = await res.json();
       
-      // UPDATE: Verify that WooCommerce actually returned an array of products
+      // Verify that WooCommerce actually returned an array of products
       if (res.ok && Array.isArray(data)) {
+        
+        // FIX: Force only ONE image per product to prevent UI clutter
+        const formattedData = data.map(product => ({
+          ...product,
+          images: product.images && product.images.length > 0 ? [product.images[0]] : []
+        }));
+
         if (isInitial) {
-          setProducts(data);
+          setProducts(formattedData);
         } else {
-          setProducts((prev) => [...prev, ...data]);
+          setProducts((prev) => [...prev, ...formattedData]);
         }
 
         // If we received fewer products than requested, there are no more pages
@@ -139,8 +146,8 @@ function CategoryContent() {
         {/* Content Area */}
         <div style={{ padding: "clamp(24px, 5vw, 48px)" }}>
           {loading ? (
-            /* Premium Luxury Skeleton Grid (Initial Load) */
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "32px" }}>
+            /* Premium Luxury Skeleton Grid (Initial Load) - Updated for better Mobile Responsiveness */
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 280px), 1fr))", gap: "32px" }}>
               {[...Array(8)].map((_, i) => (
                 <div key={i} style={{ borderRadius: "16px", overflow: "hidden" }}>
                   <div className="luxury-shimmer" style={{ width: "100%", aspectRatio: "3/4", borderRadius: "12px", marginBottom: "20px" }} />
@@ -186,8 +193,8 @@ function CategoryContent() {
             </div>
           ) : (
             <>
-              {/* Product Grid */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "clamp(24px, 4vw, 40px)" }}>
+              {/* Product Grid - Updated for better Mobile Responsiveness */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 280px), 1fr))", gap: "clamp(24px, 4vw, 40px)" }}>
                 {products.map((p, i) => (
                   <div 
                     key={`${p.id}-${i}`} 
